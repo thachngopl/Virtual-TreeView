@@ -2327,6 +2327,8 @@ type
     FOnEndOperation: TVTOperationEvent;          // Called when an operation ends
 
     FVclStyleEnabled: Boolean;
+    FSelectionPaddingLeft: Integer;
+    FSelectionPaddingRight: Integer;
 
     procedure CMStyleChanged(var Message: TMessage); message CM_STYLECHANGED;
     procedure CMParentDoubleBufferedChange(var Message: TMessage); message CM_PARENTDOUBLEBUFFEREDCHANGED;
@@ -2829,6 +2831,8 @@ type
     property ScrollBarOptions: TScrollBarOptions read FScrollBarOptions write SetScrollBarOptions;
     property SelectionBlendFactor: Byte read FSelectionBlendFactor write FSelectionBlendFactor default 128;
     property SelectionCurveRadius: Cardinal read FSelectionCurveRadius write SetSelectionCurveRadius default 0;
+    property SelectionPaddingLeft: Integer read FSelectionPaddingLeft write FSelectionPaddingLeft default 0;
+    property SelectionPaddingRight: Integer read FSelectionPaddingRight write FSelectionPaddingRight default 0;
     property StateImages: TCustomImageList read FStateImages write SetStateImages;
     property TextMargin: Integer read FTextMargin write SetTextMargin default 4;
     property TreeOptions: TCustomVirtualTreeOptions read FOptions write SetOptions;
@@ -3561,6 +3565,8 @@ type
     property ScrollBarOptions;
     property SelectionBlendFactor;
     property SelectionCurveRadius;
+    property SelectionPaddingLeft;
+    property SelectionPaddingRight;
     property ShowHint;
     property StateImages;
     property StyleElements;
@@ -12014,6 +12020,8 @@ begin
   FDragImageKind := diComplete;
   FLastSelectionLevel := -1;
   FSelectionBlendFactor := 128;
+  FSelectionPaddingLeft := 0;
+  FSelectionPaddingLeft := 0;
 
   FIndent := 18;
 
@@ -24327,13 +24335,20 @@ const
   //---------------------------------------------------------------------------
 
   procedure DrawBackground(State: Integer);
+  var
+    LRect: TRect;
   begin
     // if the full row selection is disabled or toGridExtensions is in the MiscOptions, draw the selection
     // into the InnerRect, otherwise into the RowRect
     if not (toFullRowSelect in FOptions.FSelectionOptions) or (toGridExtensions in FOptions.FMiscOptions) then
       DrawThemeBackground(Theme, PaintInfo.Canvas.Handle, TVP_TREEITEM, State, InnerRect, nil)
     else
-      DrawThemeBackground(Theme, PaintInfo.Canvas.Handle, TVP_TREEITEM, State, RowRect, nil);
+    begin
+      LRect := RowRect;
+      Inc(LRect.Left, FSelectionPaddingLeft);
+      Dec(LRect.Right, FSelectionPaddingRight);
+      DrawThemeBackground(Theme, PaintInfo.Canvas.Handle, TVP_TREEITEM, State, LRect, nil);
+    end;
   end;
 
   procedure DrawThemedFocusRect(State: Integer);
