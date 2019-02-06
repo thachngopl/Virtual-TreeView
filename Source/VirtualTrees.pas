@@ -2304,6 +2304,7 @@ type
     FOnBeforeDrawLineImage: TVTBeforeDrawLineImageEvent; // Called to allow adjusting the indention of treelines.
     FOnKeyAction: TVTKeyActionEvent;             // Used to selectively prevent key actions (full expand on Ctrl+'+' etc.).
     FOnScroll: TVTScrollEvent;                   // Called when one or both paint offsets changed.
+    FOnUpdateVerticalRange: TNotifyEvent;
     FOnUpdating: TVTUpdatingEvent;               // Called from BeginUpdate, EndUpdate, BeginSynch and EndSynch.
     FOnGetCursor: TVTGetCursorEvent;             // Called to allow the app. to set individual cursors.
     FOnStateChange: TVTStateChangeEvent;         // Called whenever a state in the tree changes.
@@ -2964,6 +2965,7 @@ type
     property OnSaveNode: TVTSaveNodeEvent read FOnSaveNode write FOnSaveNode;
     property OnSaveTree: TVTSaveTreeEvent read FOnSaveTree write FOnSaveTree;
     property OnScroll: TVTScrollEvent read FOnScroll write FOnScroll;
+    property OnUpdateVerticalRange: TNotifyEvent read FOnUpdateVerticalRange write FOnUpdateVerticalRange;
     property OnShowScrollBar: TVTScrollBarShowEvent read FOnShowScrollBar write FOnShowScrollBar;
     property OnBeforeGetCheckState: TVTBeforeGetCheckStateEvent read FOnBeforeGetCheckState write FOnBeforeGetCheckState;
     property OnStartOperation: TVTOperationEvent read FOnStartOperation write FOnStartOperation;
@@ -3490,6 +3492,7 @@ type
 
     property Canvas;
     property RangeX;
+    property RangeY;
     property LastDragEffect;
     property CheckImageKind; // should no more be published to make #622 fix working
   published
@@ -3714,6 +3717,7 @@ type
     property OnSaveNode;
     property OnSaveTree;
     property OnScroll;
+    property OnUpdateVerticalRange;
     property OnShortenString;
     property OnShowScrollBar;
     property OnBeforeGetCheckState;
@@ -32651,6 +32655,9 @@ procedure TBaseVirtualTree.UpdateVerticalRange;
 begin
   // Total node height includes the height of the invisible root node.
   FRangeY := Cardinal(Int64(FRoot.TotalHeight) - FRoot.NodeHeight + FBottomSpace);
+  // Trigger event
+  if Assigned(FOnUpdateVerticalRange) then
+    FOnUpdateVerticalRange(Self);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
