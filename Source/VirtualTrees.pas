@@ -2983,7 +2983,8 @@ type
     procedure Assign(Source: TPersistent); override;
     procedure BeginDrag(Immediate: Boolean; Threshold: Integer = -1);
     procedure BeginSynch;
-    procedure BeginUpdate; virtual;
+    procedure BeginUpdate; overload; virtual;
+    procedure BeginUpdate(AProc: TProc); overload;
     procedure CancelCutOrCopy;
     function CancelEditNode: Boolean;
     procedure CancelOperation;
@@ -25846,6 +25847,13 @@ begin
   DoStateChange([tsSynchMode]);
 end;
 
+procedure TBaseVirtualTree.BeginUpdate(AProc: TProc);
+begin
+  BeginUpdate;
+    AProc;
+  EndUpdate;
+end;
+
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TBaseVirtualTree.BeginUpdate;
@@ -32393,7 +32401,7 @@ begin
   // Total node height includes the height of the invisible root node.
   FRangeY := Cardinal(Int64(FRoot.TotalHeight) - FRoot.NodeHeight + FBottomSpace);
   // Trigger event
-  if Assigned(FOnUpdateVerticalRange) then
+  if not (csDestroying in ComponentState) and  Assigned(FOnUpdateVerticalRange) then
     FOnUpdateVerticalRange(Self);
 end;
 
