@@ -78,7 +78,7 @@ uses
   Winapi.ShlObj, System.UITypes, System.Generics.Collections;
 
 const
-  VTVersion = '7.1.0';
+  VTVersion = '7.2.0';
 
 const
   VTTreeStreamVersion = 3;
@@ -14974,7 +14974,6 @@ begin
       else begin
         if not (toMultiSelect in FOptions.FSelectionOptions) then
           ClearSelection;
-         Assert(Assigned(FRangeAnchor), 'We assume that FRangeAnchor is always assigned here. If so, delete the following 2 code lines.');
         if FRangeAnchor = nil then
           FRangeAnchor := Node;
       end;
@@ -20849,7 +20848,7 @@ begin
           // New cache entry to set up.
           with FPositionCache[Index] do
           begin
-            Node := CurrentNode;
+            Node := CurrentNode; // EAccessViolation seen here in TreeSize V4.3.1
             AbsoluteTop := CurrentTop;
           end;
           Inc(Index);
