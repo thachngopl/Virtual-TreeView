@@ -22595,8 +22595,10 @@ begin
 
     if FLastHitInfo.HitNode <> nil then begin // Use THitInfo of mouse down here, see issue #692
       DoNodeClick(FLastHitInfo);
-      InvalidateNode(FLastHitInfo.HitNode);
-      FLastHitInfo.HitNode := nil; // prevent firing the event again
+      if Assigned(FLastHitInfo.HitNode) then begin
+        InvalidateNode(FLastHitInfo.HitNode);
+        FLastHitInfo.HitNode := nil; // prevent firing the event again
+      end;//if
     end;
 
     // handle a pending edit event
