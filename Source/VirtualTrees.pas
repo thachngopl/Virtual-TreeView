@@ -26,15 +26,15 @@ unit VirtualTrees;
 // For a list of recent changes please see file CHANGES.TXT
 //
 // Credits for their valuable assistance and code donations go to:
-//   Freddy Ertl, Marian Aldenhövel, Thomas Bogenrieder, Jim Kuenemann, Werner Lehmann, Jens Treichler,
-//   Paul Gallagher (IBO tree), Ondrej Kelle, Ronaldo Melo Ferraz, Heri Bender, Roland Bedürftig (BCB)
+//   Freddy Ertl, Marian Aldenhoevel, Thomas Bogenrieder, Jim Kuenemann, Werner Lehmann, Jens Treichler,
+//   Paul Gallagher (IBO tree), Ondrej Kelle, Ronaldo Melo Ferraz, Heri Bender, Roland Beduerftig (BCB)
 //   Anthony Mills, Alexander Egorushkin (BCB), Mathias Torell (BCB), Frank van den Bergh, Vadim Sedulin, Peter Evans,
 //   Milan Vandrovec (BCB), Steve Moss, Joe White, David Clark, Anders Thomsen, Igor Afanasyev, Eugene Programmer,
 //   Corbin Dunn, Richard Pringle, Uli Gerhardt, Azza, Igor Savkic, Daniel Bauten, Timo Tegtmeier, Dmitry Zegebart,
-//   Andreas Hausladen, Joachim Marder, Roman Kassebaum, Vincent Parret, Dietmar Rösler, Sanjay Kanade,
+//   Andreas Hausladen, Joachim Marder, Roman Kassebaum, Vincent Parret, Dietmar Roesler, Sanjay Kanade,
 //   and everyone that sent pull requests: https://github.com/Virtual-TreeView/Virtual-TreeView/pulls?q=
 // Beta testers:
-//   Freddy Ertl, Hans-Jürgen Schnorrenberg, Werner Lehmann, Jim Kueneman, Vadim Sedulin, Moritz Franckenstein,
+//   Freddy Ertl, Hans-Juergen Schnorrenberg, Werner Lehmann, Jim Kueneman, Vadim Sedulin, Moritz Franckenstein,
 //   Wim van der Vegt, Franc v/d Westelaken
 // Indirect contribution (via publicly accessible work of those persons):
 //   Alex Denissov, Hiroyuki Hori (MMXAsm expert)
@@ -45,6 +45,8 @@ unit VirtualTrees;
 //   https://github.com/Virtual-TreeView/Virtual-TreeView
 // Accessability implementation:
 //   Marco Zehe (with help from Sebastian Modersohn)
+// Port to Firemonkey:
+//   Karol Bieniaszewski (github user livius2)
 //----------------------------------------------------------------------------------------------------------------------
 
 interface
@@ -76,9 +78,15 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.ImgList, Winapi.ActiveX, Vcl.StdCtrls, System.Classes,
   Vcl.Menus, Vcl.Printers, System.Types, Winapi.CommCtrl, Vcl.Themes, Winapi.UxTheme,
   Winapi.ShlObj, System.UITypes, System.Generics.Collections;
+type
+{$IFDEF VT_FMX}
+  TDimension = Single;
+{$ELSE}
+  TDimension = Integer; // For Firemonkey support, see #841
+{$ENDIF}
 
 const
-  VTVersion = '7.2.0';
+  VTVersion = '7.2.1';
 
 const
   VTTreeStreamVersion = 3;
@@ -144,8 +152,6 @@ const
   // Decoupling message for auto-adjusting the internal edit window.
   CM_AUTOADJUST = CM_BASE + 2005;
 
-  
-
   // VT's own clipboard formats,
   // Note: The reference format is used internally to allow to link to a tree reference
   //       to implement optimized moves and other back references.
@@ -191,13 +197,13 @@ var // Clipboard format IDs used in OLE drag'n drop and clipboard transfers.
 
   {$MinEnumSize 1, make enumerations as small as possible}
 
+
+
 type
   // Alias defintions for convenience
   TImageIndex = System.UITypes.TImageIndex;
   TCanvas = Vcl.Graphics.TCanvas;
 
-  // For Firemonkey support, see #841
-  TDimension = Integer;
 
   // The exception used by the trees.
   EVirtualTreeError = class(Exception);
@@ -394,7 +400,7 @@ type
     -- hmToolTip shows a hint only when node text is not fully shown. It's meant to
        fully show node text when not visible. It will show multi-line hint only if
        the node itself is multi-line. If you provide a custom multi-line hint then
-       you msut force linebreak style to hlbForceMultiLine in the OnGetHint event 
+       you must force linebreak style to hlbForceMultiLine in the OnGetHint event
        in order to show the complete hint.
   }
   TVTHintMode = (
@@ -461,7 +467,7 @@ type
     The animation does not look good as the image splits and moves with it.
   }
   TVTAnimationOption = (
-    toAnimatedToggle,          // Expanding and collapsing a node is animated (quick window scroll). 
+    toAnimatedToggle,          // Expanding and collapsing a node is animated (quick window scroll).
                                // **See note above.
     toAdvancedAnimatedToggle   // Do some advanced animation effects when toggling a node.
   );
@@ -474,7 +480,7 @@ type
     toAutoScroll,               // Scroll if mouse is near the border while dragging or selecting.
     toAutoScrollOnExpand,       // Scroll as many child nodes in view as possible after expanding a node.
     toAutoSort,                 // Sort tree when Header.SortColumn or Header.SortDirection change or sort node if
-                                // child nodes are added.
+                                // child nodes are added. Sorting will take place also if SortColum is NoColumn (-1).
     toAutoSpanColumns,          // Large entries continue into next column(s) if there's no text in them (no clipping).
     toAutoTristateTracking,     // Checkstates are automatically propagated for tri state check boxes.
     toAutoHideButtons,          // Node buttons are hidden when there are child nodes, but all are invisible.
@@ -671,7 +677,7 @@ type
     Align: Byte;             // line/button alignment
     CheckState: TCheckState; // indicates the current check state (e.g. checked, pressed etc.)
     CheckType: TCheckType;   // indicates which check type shall be used for this node
-    Dummy: Byte;             // dummy value to fill DWORD boundary
+    Dummy: Byte;             // dummy value to fill DWORD boundary       TODO: Is this still necessary?
     TotalCount,              // sum of this node, all of its child nodes and their child nodes etc.
     TotalHeight: Cardinal;   // height in pixels this node covers on screen including the height of all of its
                              // children
@@ -991,7 +997,7 @@ type
     FSpacing: TDimension;
     FOptions: TVTColumnOptions;
     FEditOptions: TVTEditOptions;
-    FEditNextColumn: Integer;
+    FEditNextColumn: TDimension;
     FTag: NativeInt;
     FAlignment: TAlignment;
     FCaptionAlignment: TAlignment;     // Alignment of the caption.
@@ -1306,13 +1312,13 @@ type
     procedure SetAutoSizeIndex(Value: TColumnIndex);
     procedure SetBackground(Value: TColor);
     procedure SetColumns(Value: TVirtualTreeColumns);
-    procedure SetDefaultHeight(Value: Integer);
+    procedure SetDefaultHeight(Value: TDimension);
     procedure SetFont(const Value: TFont);
-    procedure SetHeight(Value: Integer);
+    procedure SetHeight(Value: TDimension);
     procedure SetImages(const Value: TCustomImageList);
     procedure SetMainColumn(Value: TColumnIndex);
-    procedure SetMaxHeight(Value: Integer);
-    procedure SetMinHeight(Value: Integer);
+    procedure SetMaxHeight(Value: TDimension);
+    procedure SetMinHeight(Value: TDimension);
     procedure SetOptions(Value: TVTHeaderOptions);
     procedure SetParentFont(Value: Boolean);
     procedure SetSortColumn(Value: TColumnIndex);
@@ -1328,7 +1334,7 @@ type
     procedure FontChanged(Sender: TObject); virtual;
     function CanSplitterResize(P: TPoint): Boolean;
     function CanWriteColumns: Boolean; virtual;
-    procedure ChangeScale(M, D: Integer); virtual;
+    procedure ChangeScale(M, D: TDimension); virtual;
     function DetermineSplitterIndex(P: TPoint): Boolean; virtual;
     procedure DoAfterAutoFitColumn(Column: TColumnIndex); virtual;
     procedure DoAfterColumnWidthTracking(Column: TColumnIndex); virtual;
@@ -1370,8 +1376,8 @@ type
     function InHeaderSplitterArea(P: TPoint): Boolean; virtual;
     procedure Invalidate(Column: TVirtualTreeColumn; ExpandToBorder: Boolean = False; UpdateNowFlag : Boolean = False);
     procedure LoadFromStream(const Stream: TStream); virtual;
-    function ResizeColumns(ChangeBy: Integer; RangeStartCol: TColumnIndex; RangeEndCol: TColumnIndex;
-      Options: TVTColumnOptions = [coVisible]): Integer;
+    function ResizeColumns(ChangeBy: TDimension; RangeStartCol: TColumnIndex; RangeEndCol: TColumnIndex;
+      Options: TVTColumnOptions = [coVisible]): TDimension;
     procedure RestoreColumns;
     procedure SaveToStream(const Stream: TStream); virtual;
 
@@ -1410,7 +1416,7 @@ type
     ['{2BE3EAFA-5ACB-45B4-9D9A-B58BCC496E17}']
     function BeginEdit: Boolean; stdcall;                  // Called when editing actually starts.
     function CancelEdit: Boolean; stdcall;                 // Called when editing has been cancelled by the tree.
-    function EndEdit: Boolean; stdcall;                    // Called when editing has been finished by the tree. Returns True if successful, False if edit mode is still active.
+    function EndEdit: Boolean; stdcall;                     // Called when editing has been finished by the tree. Returns True if successful, False if edit mode is still active.
     function PrepareEdit(Tree: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex): Boolean; stdcall;
                                                            // Called after creation to allow a setup.
     procedure ProcessMessage(var Message: TMessage); stdcall;
@@ -1681,7 +1687,7 @@ type
   TVTImageInfo = record
     Index: TImageIndex;       // Index in the associated image list.
     XPos,                     // Horizontal position in the current target canvas.
-    YPos: Integer;            // Vertical position in the current target canvas.
+    YPos: TDimension;         // Vertical position in the current target canvas.
     Ghosted: Boolean;         // Flag to indicate that the image must be drawn slightly lighter.
     Images: TCustomImageList; // The image list to be used for painting.
     function Equals(const pImageInfo2: TVTImageInfo): Boolean;
@@ -1724,14 +1730,14 @@ type
     Position: TColumnPosition;    // the column position of the node
     CellRect: TRect;              // the node cell
     ContentRect: TRect;           // the area of the cell used for the node's content
-    NodeWidth: Integer;           // the actual node width
+    NodeWidth: TDimension;        // the actual node width
     Alignment: TAlignment;        // how to align within the node rectangle
     CaptionAlignment: TAlignment; // how to align text within the caption rectangle
     BidiMode: TBidiMode;          // directionality to be used for painting
     BrushOrigin: TPoint;          // the alignment for the brush used to draw dotted lines
     ImageInfo: array[TVTImageInfoIndex] of TVTImageInfo; // info about each possible node image
     Offsets: TVTOffsets;          // The offsets of the various elements of a tree node
-    VAlign: Integer;
+    VAlign: TDimension;
     procedure AdjustImageCoordinates();
   end;
 
@@ -3284,6 +3290,7 @@ type
     function CalcMinHeight: Integer; virtual;
     procedure CreateParams(var Params: TCreateParams); override;
     function GetTextSize: TSize; virtual;
+    procedure KeyPress(var Key: Char); override;
   public
     constructor Create(Link: TStringEditLink); reintroduce;
 
@@ -19037,13 +19044,13 @@ function TBaseVirtualTree.DetermineNextCheckState(CheckType: TCheckType; CheckSt
 begin
   case CheckType of
     ctTriStateCheckBox,
-    ctCheckBox: begin
+    ctButton,
+    ctCheckBox:
+    begin
       Result := CheckState.GetToggled();
     end;//ctCheckbox
     ctRadioButton:
       Result := csCheckedNormal;
-    ctButton:
-      Result := csUncheckedNormal;
   else
     Result := csMixedNormal;
   end;
@@ -19244,7 +19251,7 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-function TBaseVirtualTree.DoCancelEdit: Boolean;
+function TBaseVirtualTree.DoCancelEdit(): Boolean;
 
 // Called when the current edit action or a pending edit must be cancelled.
 
@@ -19259,6 +19266,7 @@ begin
       FOnEditCancelled(Self, FEditColumn);
     if not (csDestroying in ComponentState) then
       FEditLink := nil;
+    SetFocus();
   end;
 end;
 
@@ -19716,6 +19724,7 @@ begin
       FOnEdited(Self, FFocusedNode, FEditColumn);
   end;
   DoStateChange([], [tsEditPending]);
+  SetFocus();
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -19940,23 +19949,19 @@ function TBaseVirtualTree.DoGetImageIndex(Node: PVirtualNode; Kind: TVTImageKind
 const
   cTVTImageKind2String: Array [TVTImageKind] of string = ('ikNormal', 'ikSelected', 'ikState', 'ikOverlay');
 begin
+  if Kind = ikState then
+    Result := Self.StateImages
+  else
+    Result := Self.Images;
   // First try the enhanced event to allow for custom image lists.
-  if Assigned(FOnGetImageEx) then begin
-    if Kind = ikState then
-      Result := Self.StateImages
-    else
-      Result := Self.Images;
-    FOnGetImageEx(Self, Node, Kind, Column, Ghosted, Index, Result);
-  end
-  else begin
-    if Kind = ikState then
-      Result := Self.StateImages
-    else
-      Result := Self.Images;
-    if Assigned(FOnGetImage) then
-      FOnGetImage(Self, Node, Kind, Column, Ghosted, Index);
-  end;
+  if Assigned(FOnGetImageEx) then
+    FOnGetImageEx(Self, Node, Kind, Column, Ghosted, Index, Result)
+  else if Assigned(FOnGetImage) then
+    FOnGetImage(Self, Node, Kind, Column, Ghosted, Index);
+
   Assert((Index < 0) or Assigned(Result), 'An image index was supplied for TVTImageKind.' + cTVTImageKind2String[Kind] + ' but no image list was supplied.');
+  if not Assigned(Result) then
+    Index := -1;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -21563,6 +21568,8 @@ begin
 
   if ImgCheckType = ctTriStateCheckBox then
     ImgCheckType := ctCheckBox;
+  if IsHot and (ImgCheckState in  [csCheckedNormal, csUncheckedNormal]) and (GetKeyState(VK_LBUTTON) < 0) and (hiOnItemCheckbox in FLastHitInfo.HitPositions) then
+    Inc(ImgCheckState); // Advance to pressed state
 
   if ImgCheckType = ctNone then
     Result := -1
@@ -22387,7 +22394,7 @@ begin
     NewCheckState := DetermineNextCheckState(HitInfo.HitNode.CheckType, HitInfo.HitNode.CheckState);
     if (ssLeft in KeysToShiftState(Message.Keys)) and DoChecking(HitInfo.HitNode, NewCheckState) then
     begin
-      if Self.SelectedCount > 1 then
+      if (Self.SelectedCount > 1) and (Selected[HitInfo.HitNode]) then
         SetCheckStateForAll(NewCheckState, True)
       else
         DoCheckClick(HitInfo.HitNode, NewCheckState);
@@ -22588,6 +22595,7 @@ begin
 
     if FLastHitInfo.HitNode <> nil then begin // Use THitInfo of mouse down here, see issue #692
       DoNodeClick(FLastHitInfo);
+      InvalidateNode(FLastHitInfo.HitNode);
       FLastHitInfo.HitNode := nil; // prevent firing the event again
     end;
 
@@ -23670,7 +23678,7 @@ procedure TBaseVirtualTree.PaintCheckImage(Canvas: TCanvas; const ImageInfo: TVT
 var
   ForegroundColor: COLORREF;
   R: TRect;
-  Details: TThemedElementDetails;
+  Details, lSizeDetails: TThemedElementDetails;
   lSize: TSize;
   Theme: HTHEME;
 begin
@@ -23710,26 +23718,39 @@ begin
       else
         Details := StyleServices.GetElementDetails(tbButtonRoot);
       end;
-      if StyleServices.IsSystemStyle and not (Index in [ckButtonNormal..ckButtonDisabled]) then
+      if StyleServices.IsSystemStyle {and not (Index in [ckButtonNormal..ckButtonDisabled])} then
       begin
         Theme := OpenThemeData(Handle, 'BUTTON');
         GetThemePartSize(Theme, Canvas.Handle, Details.Part, Details.State, nil, TS_TRUE, lSize);
+        if (Index in [ckButtonNormal..ckButtonDisabled]) then begin
+           lSizeDetails := StyleServices.GetElementDetails(tbCheckBoxCheckedNormal); // Size of dropdown button should be based on size of checkboxes
+           GetThemePartSize(Theme, Canvas.Handle, lSizeDetails.Part, lSizeDetails.State, nil, TS_TRUE, lSize);
+          // dropdown buttons should be slightly larger than checkboxes, see issue #887
+          lSize.cx := Round(lSize.cx * 1.15);
+          lSize.cy := Round(lSize.cy * 1.1);
+        end;
         R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
+        if (Index in [ckButtonNormal..ckButtonDisabled]) then
+          R.Offset(-1, 0); // Eliminate 1 pixel border around Windows themed button
         DrawThemeBackground(Theme, Canvas.Handle, Details.Part, Details.State, R, nil);
         CloseThemeData(Theme);
       end
       else
       begin
-        if (Index in [ckButtonNormal..ckButtonDisabled]) or   not StyleServices.GetElementSize(Canvas.Handle, Details, TElementSize.esActual, lSize) then begin
+        if (Index in [ckButtonNormal..ckButtonDisabled]) or not StyleServices.GetElementSize(Canvas.Handle, Details, TElementSize.esActual, lSize) then begin
           // radio buttons fail in RAD Studio 10 Seattle and lower, fallback to checkbox images. See issue #615
           if not StyleServices.GetElementSize(Canvas.Handle, StyleServices.GetElementDetails(tbCheckBoxUncheckedNormal), TElementSize.esActual, lSize) then
             lSize := TSize.Create(GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK));
         end;//if
         R := Rect(XPos, YPos, XPos + lSize.cx, YPos + lSize.cy);
-
         StyleServices.DrawElement(Canvas.Handle, Details, R);
-        Canvas.Refresh;
-      end
+        //Canvas.Refresh; // Why is this needed?
+      end;
+      if (Index in [ckButtonNormal..ckButtonDisabled]) then begin
+        Canvas.Pen.Color := clGray;
+        // These constants have been determined by test using various themes and dpi-scalings
+        DrawArrow(Canvas, TScrollDirection.sdDown, Point(R.Left + Round(lSize.cx * 0.22), R.Top + Round(lSize.cy * 0.33)), Round(lSize.cx *0.28));
+      end;//if
     end
     else
       with FCheckImages do
@@ -29397,7 +29418,8 @@ procedure TBaseVirtualTree.GetTextInfo(Node: PVirtualNode; Column: TColumnIndex;
 begin
   R := Rect(0, 0, 0, 0);
   Text := '';
-  AFont.Assign(Font); // 1 EConvertError due to Font being nil seen here in 01/2019
+  if Assigned(Font) then // 1 EConvertError due to Font being nil seen here in 01/2019, See issue #878
+    AFont.Assign(Font);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -31411,7 +31433,7 @@ begin
   ScrolledVertically := False;
   ScrolledHorizontally := False;
 
-  if Assigned(Node) and (Node <> FRoot) then
+  if Assigned(Node) and (Node <> FRoot) and HandleAllocated then // We don't want to create the handle if it has not yet been created, see issue #897
   begin
     // Make sure all parents of the node are expanded.
     Run := Node.Parent;
@@ -32705,7 +32727,6 @@ begin
     VK_ESCAPE:
       begin
         Tree.DoCancelEdit;
-        Tree.SetFocus;
       end;
     VK_RETURN:
       begin
@@ -32800,12 +32821,17 @@ begin
         if Tree.IsEditing then
         begin
           Tree.InvalidateNode(FLink.FNode);
-          NextNode := Tree.GetNextVisible(FLink.FNode, True);
+          if ssShift in KeyDataToShiftState(Message.KeyData) then
+            NextNode := Tree.GetPreviousVisible(FLink.FNode, True) // Shift+Tab goes to previous mode
+          else
+            NextNode := Tree.GetNextVisible(FLink.FNode, True);
           Tree.EndEditNode;
           // check NextNode, otherwise we got AV
           if NextNode <> nil then
           begin
-            Tree.FocusedNode := NextNode;
+            // Continue editing next node 
+            ClearSelection;
+            Tree.Selected[NextNode] := True;
             if Tree.CanEdit(Tree.FocusedNode, Tree.FocusedColumn) then
               Tree.DoEdit;
           end;
@@ -32898,6 +32924,13 @@ begin
     SelectObject(DC, LastFont);
     ReleaseDC(Handle, DC);
   end;
+end;
+
+procedure TVTEdit.KeyPress(var Key: Char);
+begin
+  if (Key = #13) and Assigned(FLink) and not (vsMultiline in FLink.FNode.States) then
+    Key := #0; // Filter out return keys as they will be added to the text, avoids #895
+  inherited;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -33362,6 +33395,8 @@ begin
     Canvas.TextFlags := 0;
     InflateRect(R, -FTextMargin, 0);
 
+    if (vsDisabled in Node.States) or not Enabled then
+      Canvas.Font.Color := FColors.DisabledColor;
     // Multiline nodes don't need special font handling or text manipulation.
     // Note: multiline support requires the Unicode version of DrawText, which is able to do word breaking.
     //       The emulation in this unit does not support this so we have to use the OS version. However
@@ -33371,9 +33406,6 @@ begin
     begin
       DoPaintText(Node, Canvas, Column, ttNormal);
       Height := ComputeNodeHeight(Canvas, Node, Column);
-      // Disabled node color overrides all other variants.
-      if (vsDisabled in Node.States) or not Enabled then
-        Canvas.Font.Color := FColors.DisabledColor;
 
       // The edit control flag will ensure that no partial line is displayed, that is, only lines
       // which are (vertically) fully visible are drawn.
@@ -33398,10 +33430,6 @@ begin
         GetTextExtentPoint32W(Canvas.Handle, PWideChar(Text), Length(Text), Size);
         NodeWidth := Size.cx + 2 * FTextMargin;
       end;
-
-      // Disabled node color overrides all other variants.
-      if (vsDisabled in Node.States) or not Enabled then
-        Canvas.Font.Color := FColors.DisabledColor;
 
       DrawFormat := DT_NOPREFIX or DT_VCENTER or DT_SINGLELINE;
       if BidiMode <> bdLeftToRight then
@@ -33471,8 +33499,10 @@ begin
       Canvas.Font.Color := FColors.DisabledColor;
 
     R := ContentRect;
-    if Alignment = taRightJustify then
-      Dec(R.Right, NodeWidth + FTextMargin)
+    if Alignment = taRightJustify then begin
+      Dec(R.Right, NodeWidth + FTextMargin);
+      DrawFormat := DrawFormat or DT_RIGHT
+    end
     else
       Inc(R.Left, NodeWidth + FTextMargin);
 
@@ -33813,7 +33843,8 @@ begin
   end
   else if Assigned(FOnGetText) then begin
     FOnGetText(Self, pEventArgs.Node, pEventArgs.Column, TVSTTextType.ttNormal, pEventArgs.CellText);
-    FOnGetText(Self, pEventArgs.Node, pEventArgs.Column, TVSTTextType.ttStatic, pEventArgs.StaticText);
+    if toShowStaticText in TreeOptions.StringOptions then
+      FOnGetText(Self, pEventArgs.Node, pEventArgs.Column, TVSTTextType.ttStatic, pEventArgs.StaticText);
   end;
 end;
 
@@ -34151,7 +34182,7 @@ var
   Alignment: TAlignment;
   PaintInfo: TVTPaintInfo;
   Dummy: TColumnIndex;
-  LineImage: TLineImage;
+  lOffsets: TVTOffsets;
 begin
   if Length(S) = 0 then
     S := Text[Node, Column];
@@ -34181,18 +34212,11 @@ begin
   PaintInfo.BidiMode := BidiMode;
   PaintInfo.Column := Column;
   PaintInfo.CellRect := Rect(0, 0, 0, 0);
+  GetOffsets(Node, lOffsets, TVTElement.ofsEndOfClientArea, Column);
   if Column > NoColumn then
   begin
-    PaintInfo.CellRect.Right := FHeader.Columns[Column].Width - FTextMargin;
-    PaintInfo.CellRect.Left := FTextMargin + FMargin;
-    if Column = Header.MainColumn then
-    begin
-      if toFixedIndent in FOptions.FPaintOptions then
-        SetLength(LineImage, 1)
-      else
-        DetermineLineImageAndSelectLevel(Node, LineImage);
-    Inc(PaintInfo.CellRect.Left, Length(LineImage) * Integer(Indent));
-    end;
+    PaintInfo.CellRect.Right := FHeader.Columns[Column].Width - 2 * FTextMargin;
+    PaintInfo.CellRect.Left := lOffsets[TVTElement.ofsLabel];
   end
   else
     PaintInfo.CellRect.Right := ClientWidth;
