@@ -7,6 +7,9 @@ unit VirtualTrees.Accessibility;
 
 interface
 
+{$WEAKLINKRTTI ON}
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+
 uses
   Winapi.Windows, System.Classes, Winapi.ActiveX, System.Types, Winapi.oleacc,
   VirtualTrees, VirtualTrees.AccessibilityFactory, Vcl.Controls;
@@ -297,7 +300,7 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 function TVirtualTreeAccessibility.Get_accHelpTopic(out pszHelpFile: WideString; varChild: OleVariant;
                           out pidTopic: Integer): HResult;
-// Returns the HelpContext ID, if present. 
+// Returns the HelpContext ID, if present.
 begin
   pszHelpFile := '';
   pidTopic := 0;
@@ -472,7 +475,7 @@ function TVirtualTreeAccessibility.Get_accValue(varChild: OleVariant; out pszVal
 // the TreeView control itself does not have a value, returning false here.
 begin
   RESULT := S_FALSE;
-  
+
   pszValue := '';
   if VarType(varChild) = VT_I4 then
     if varChild = CHILDID_SELF then

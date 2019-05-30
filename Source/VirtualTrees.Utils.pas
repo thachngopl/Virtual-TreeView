@@ -28,6 +28,9 @@ interface
 {$WARN UNSAFE_CAST OFF}
 {$WARN UNSAFE_CODE OFF}
 
+{$WEAKLINKRTTI ON}
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+
 uses
   Winapi.Windows,
   Winapi.ActiveX,

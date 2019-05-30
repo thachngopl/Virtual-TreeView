@@ -2,6 +2,9 @@ unit VirtualTrees.WorkerThread;
 
 interface
 
+{$WEAKLINKRTTI ON}
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+
 uses
   System.Classes,
   VirtualTrees;
@@ -31,10 +34,6 @@ type
 
     property CurrentTree: TBaseVirtualTree read FCurrentTree;
   end;
-
-
-
-
 
 implementation
 

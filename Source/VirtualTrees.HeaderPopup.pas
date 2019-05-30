@@ -25,13 +25,13 @@ unit VirtualTrees.HeaderPopup;
 //
 // September 2004:
 //  - Bug fix: TVTHeaderPopupMenu.OnMenuItemClick used the wrong Tag member for the event.
-// 
+//
 // Modified 12 Dec 2003 by Ralf Junker <delphi@zeitungsjunge.de>.
 //   - Added missing default storage specifier for Options property.
-//   - To avoid mixing up image lists of different trees sharing the same header 
-//     popup, set the popup's image list to nil if hoShowImages is not in the 
+//   - To avoid mixing up image lists of different trees sharing the same header
+//     popup, set the popup's image list to nil if hoShowImages is not in the
 //     tree's header options.
-//   - Added an additional check for the PopupComponent property before casting 
+//   - Added an additional check for the PopupComponent property before casting
 //     it hardly to a Virtual Treeview in OnMenuItemClick. See entry 31 Mar 2003.
 //
 // Modified 14 Sep 2003 by Mike Lischke <public@delphi-gems.com>.
@@ -41,21 +41,21 @@ unit VirtualTrees.HeaderPopup;
 //   - Conditional code rearrangement to get back Ctrl+Shift+Up/Down navigation.
 //
 // Modified 31 Mar 2003 by Mike Lischke <public@soft-gems.net>.
-//   - Added a check for the PopupComponent property before casting it hardly to 
+//   - Added a check for the PopupComponent property before casting it hardly to
 //     a Virtual Treeview. People might (accidentally) misuse the header popup.
 //
 // Modified 20 Oct 2002 by Borut Maricic <borut.maricic@pobox.com>.
-//   - Added the possibility to use Troy Wolbrink's Unicode aware popup menu. 
+//   - Added the possibility to use Troy Wolbrink's Unicode aware popup menu.
 //     Define the compiler symbol TNT to enable it. You can get Troy's Unicode
 //     controls collection from http://home.ccci.org/wolbrink/tnt/delphi_unicode_controls.htm.
 //
 // Modified 24 Feb 2002 by Ralf Junker <delphi@zeitungsjunge.de>.
-//   - Fixed a bug where the OnAddHeaderPopupItem would interfere with 
+//   - Fixed a bug where the OnAddHeaderPopupItem would interfere with
 //     poAllowHideAll options.
 //   - All column indexes now consistently use TColumnIndex (instead of Integer).
 //
 // Modified 23 Feb 2002 by Ralf Junker <delphi@zeitungsjunge.de>.
-//   - Added option to show menu items in the same order as the columns or in 
+//   - Added option to show menu items in the same order as the columns or in
 //     original order.
 //   - Added option to prevent the user to hide all columns.
 //
@@ -64,6 +64,9 @@ unit VirtualTrees.HeaderPopup;
 //----------------------------------------------------------------------------------------------------------------------
 
 interface
+
+{$WEAKLINKRTTI ON}
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 
 uses
   System.Classes,

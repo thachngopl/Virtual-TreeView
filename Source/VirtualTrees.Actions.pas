@@ -2,6 +2,9 @@ unit VirtualTrees.Actions;
 
 interface
 
+{$WEAKLINKRTTI ON}
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+
 uses
   System.Classes,
   System.Actions,

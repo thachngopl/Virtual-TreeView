@@ -36,6 +36,9 @@ unit VirtualTrees.AccessibilityFactory;
 
 interface
 
+{$WEAKLINKRTTI ON}
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+
 uses
   System.Classes, Winapi.oleacc, VirtualTrees;
 
@@ -61,7 +64,7 @@ type
     procedure UnRegisterAccessibleProvider(const AProvider: IVTAccessibleProvider);
   end;
 
-  
+
 implementation
 
 { TVTAccessibilityFactory }

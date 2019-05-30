@@ -60,6 +60,9 @@ interface
 {$WARN UNSAFE_CAST OFF}
 {$WARN UNSAFE_CODE OFF}
 
+{$WEAKLINKRTTI ON}
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+
 {$LEGACYIFEND ON}
 {$WARN UNSUPPORTED_CONSTRUCT      OFF}
 
@@ -1444,7 +1447,7 @@ type
     hpeText,
     // New in 7.0: Use this in FOnHeaderDrawQueryElements and OnAdvancedHeaderDraw
     // for additional custom header drawing while keeping the default drawing
-    hpeOverlay 
+    hpeOverlay
   );
 
   // Various events must be handled at different places than they were initiated or need
@@ -2056,7 +2059,7 @@ type
     FStartIndex: Cardinal;                       // index to start validating cache from
     FSelection: TNodeArray;                      // list of currently selected nodes
     FSelectionCount: Integer;                    // number of currently selected nodes (size of FSelection might differ)
-    FSelectionLocked: Boolean;                   // prevents the tree from changing the selection 
+    FSelectionLocked: Boolean;                   // prevents the tree from changing the selection
     FRangeAnchor: PVirtualNode;                  // anchor node for selection with the keyboard, determines start of a
                                                  // selection range
     FCheckPropagationCount: Cardinal;            // nesting level of check propagation (WL, 05.02.2004)
@@ -3321,7 +3324,7 @@ type
     constructor Create; virtual;
     destructor Destroy; override;
     property Node  : PVirtualNode read FNode; // [IPK] Make FNode accessible
-    property Column: TColumnIndex read FColumn; // [IPK] Make Column(Index) accessible 
+    property Column: TColumnIndex read FColumn; // [IPK] Make Column(Index) accessible
 
     function BeginEdit: Boolean; virtual; stdcall;
     function CancelEdit: Boolean; virtual; stdcall;
@@ -3491,7 +3494,7 @@ type
   [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
   TVirtualStringTree = class(TCustomVirtualStringTree)
   private
-   
+
     function GetOptions: TStringTreeOptions;
     procedure SetOptions(const Value: TStringTreeOptions);
   protected
@@ -4020,7 +4023,7 @@ uses
   VirtualTrees.Classes,
   VirtualTrees.WorkerThread,
   VirtualTrees.ClipBoard,
-  VirtualTrees.Utils, 
+  VirtualTrees.Utils,
   VirtualTrees.Export,
   VirtualTrees.HeaderPopup;
 
@@ -8819,7 +8822,7 @@ var
   RTLOffset: Integer;
 
   procedure PaintFixedArea;
-  
+
   begin
     if VisibleFixedWidth > 0 then
       PaintHeader(FHeaderBitmap.Canvas,
@@ -8841,7 +8844,7 @@ begin
     RTLOffset := FHeader.Treeview.ComputeRTLOffset
   else
     RTLOffset := 0;
-    
+
   if RTLOffset = 0 then
     PaintFixedArea;
 
@@ -8853,7 +8856,7 @@ begin
   // In case of right-to-left directionality we paint the fixed part last.
   if RTLOffset <> 0 then
     PaintFixedArea;
-  
+
   // Blit the result to target.
   with TWithSafeRect(R) do
     BitBlt(DC, Left, Top, Right - Left, Bottom - Top, FHeaderBitmap.Canvas.Handle, Left, Top, SRCCOPY);
@@ -8941,7 +8944,7 @@ var
       begin
         PaintInfo.PaintRectangle := BackgroundRect;
         FHeader.Treeview.DoAdvancedHeaderDraw(PaintInfo, [hpeBackground]);
-      end  
+      end
       else
       begin
         if (FHeader.Treeview.VclStyleEnabled and (seClient in FHeader.FOwner.StyleElements)) then
@@ -9014,7 +9017,7 @@ var
       //the dragged column will stay where it is
       if (DropMark = dmmRight) and (Items[FDragIndex].Position = Items[FDropTarget].Position + 1)
       then
-        DropMark := dmmNone;      
+        DropMark := dmmNone;
 
       IsEnabled := (coEnabled in FOptions) and (FHeader.Treeview.Enabled);
       ShowHeaderGlyph := (hoShowImages in FHeader.FOptions) and ((Assigned(Images) and (FImageIndex > -1)) or FCheckBox);
@@ -9273,7 +9276,7 @@ begin
       PaintColumnHeader(Run, TargetRect);
 
       SelectClipRgn(Handle, 0);
-      
+
       TargetRect.Left := TargetRect.Right;
       Run := GetNextVisibleColumn(Run);
     end;
@@ -15257,7 +15260,7 @@ begin
       PrepareBackGroundPicture(Source, DrawBitmap, Source.Width, Source.Height, aBkgColor);
       // copy image to destination
       BitBlt(Target.Handle, DrawRect.Left - OffsetPosition.X, DrawRect.Top - OffsetPosition.Y, (DrawRect.Right - OffsetPosition.X) - (DrawRect.Left - OffsetPosition.X),
-      (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y) + R.Top, DrawBitmap.Canvas.Handle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top, 
+      (DrawRect.Bottom - OffsetPosition.Y) - (DrawRect.Top - OffsetPosition.Y) + R.Top, DrawBitmap.Canvas.Handle, DrawRect.Left - PicRect.Left, DrawRect.Top - PicRect.Top,
         SRCCOPY);
     end;
   finally
@@ -17354,7 +17357,7 @@ var
   TempRgn: HRGN;
   BorderWidth,
   BorderHeight: Integer;
- 
+
 begin
   if tsUseThemes in FStates then
   begin
@@ -18456,7 +18459,7 @@ const
 
 begin
   inherited CreateParams(Params);
- 
+
   with Params do
   begin
     Style := Style or WS_CLIPCHILDREN or WS_CLIPSIBLINGS or ScrollBar[ScrollBarOptions.FScrollBars];
@@ -22707,7 +22710,7 @@ begin
         if ((ParentCheckState = csCheckedNormal)
              or (ParentCheckState = csUncheckedNormal))
             and (not SelfCheckState.IsDisabled())
-            and (SelfCheckState <> ParentCheckState) 
+            and (SelfCheckState <> ParentCheckState)
             and (Parent <> FRoot)
         then
           SetCheckState(Node, Node.Parent.CheckState);
@@ -29915,7 +29918,7 @@ begin
     if (toVariableNodeHeight in FOptions.FMiscOptions) then
     begin
       NewNodeHeight := Node.NodeHeight;
-      // Anonymous methods help to make this thread safe easily. 
+      // Anonymous methods help to make this thread safe easily.
       if (MainThreadId <> GetCurrentThreadId) then
         TThread.Synchronize(nil,
           procedure
@@ -30735,7 +30738,7 @@ begin
         else
           NodeBitmap.Free;
       end;//try..finally
-      
+
       if (ChildCount[nil] = 0) and (FEmptyListMessage <> '') then
       begin
         // output a message if no items are to display
@@ -30786,7 +30789,7 @@ begin
           Source.FinishCutOrCopy
         else
           DoStateChange([], [tsCutPending]);
-      end;    
+      end;
     end;
   end;
 end;
@@ -31842,7 +31845,7 @@ begin
         DoSort(FRoot);
       finally
         EndOperation(okSortTree);
-      end; 
+      end;
     end;
     InvalidateCache;
   finally
@@ -31955,7 +31958,7 @@ begin
           NeedUpdate := True;
 
           // Calculate the height delta right now as we need it for toChildrenAbove anyway.
-          HeightDelta := -Integer(Node.TotalHeight) + Integer(NodeHeight[Node]); 
+          HeightDelta := -Integer(Node.TotalHeight) + Integer(NodeHeight[Node]);
           if (FUpdateCount = 0) and (toAnimatedToggle in FOptions.FAnimationOptions) and not
              (tsCollapsing in FStates) then
           begin
@@ -32784,7 +32787,7 @@ begin
               begin
                 if ColumnCandidate = -1 then
                 begin
-                  // for toHorizontalEdit if property EditNextColumn is not used 
+                  // for toHorizontalEdit if property EditNextColumn is not used
                   // try to use just next column
                   ColumnCandidate := Tree.FocusedColumn+1;
                   while (ColumnCandidate < Tree.Header.Columns.Count)
@@ -32831,7 +32834,7 @@ begin
           // check NextNode, otherwise we got AV
           if NextNode <> nil then
           begin
-            // Continue editing next node 
+            // Continue editing next node
             ClearSelection;
             Tree.Selected[NextNode] := True;
             if Tree.CanEdit(Tree.FocusedNode, Tree.FocusedColumn) then
