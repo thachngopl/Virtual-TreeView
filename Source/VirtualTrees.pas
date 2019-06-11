@@ -25875,8 +25875,11 @@ end;
 procedure TBaseVirtualTree.BeginUpdate(AProc: TProc);
 begin
   BeginUpdate;
+  try
     AProc;
-  EndUpdate;
+  finally
+    EndUpdate;
+  end;
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
