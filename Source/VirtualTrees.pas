@@ -1856,6 +1856,7 @@ type
   TVTHeaderHeightDblClickResizeEvent = procedure(Sender: TVTHeader; var P: TPoint; Shift: TShiftState; var Allowed: Boolean) of object;
   TVTHeaderNotifyEvent = procedure(Sender: TVTHeader; Column: TColumnIndex) of object;
   TVTHeaderDraggingEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; var Allowed: Boolean) of object;
+  TVTHeaderDragOverEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; NewPosition: TColumnPosition; var Allowed: Boolean) of object;
   TVTHeaderDraggedEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; OldPosition: Integer) of object;
   TVTHeaderDraggedOutEvent = procedure(Sender: TVTHeader; Column: TColumnIndex; DropPosition: TPoint) of object;
   TVTHeaderPaintEvent = procedure(Sender: TVTHeader; HeaderCanvas: TCanvas; Column: TVirtualTreeColumn; R: TRect; Hover,
@@ -2306,6 +2307,7 @@ type
     FOnHeaderDragged: TVTHeaderDraggedEvent;     // header (column) drag'n drop
     FOnHeaderDraggedOut: TVTHeaderDraggedOutEvent; // header (column) drag'n drop, which did not result in a valid drop.
     FOnHeaderDragging: TVTHeaderDraggingEvent;   // header (column) drag'n drop
+    FOnHeaderDragOver: TVTHeaderDragOverEvent;
     FOnRenderOLEData: TVTRenderOLEDataEvent;     // application/descendant defined clipboard formats
     FOnGetUserClipboardFormats: TVTGetUserClipboardFormatsEvent; // gives application/descendants the opportunity to
                                                  // add own clipboard formats on the fly
@@ -2625,6 +2627,7 @@ type
     procedure DoHeaderDragged(Column: TColumnIndex; OldPosition: TColumnPosition); virtual;
     procedure DoHeaderDraggedOut(Column: TColumnIndex; DropPosition: TPoint); virtual;
     function DoHeaderDragging(Column: TColumnIndex): Boolean; virtual;
+    function DoHeaderDragOver(Column: TColumnIndex; NewPosition: TColumnPosition): Boolean; virtual;
     procedure DoHeaderDraw(Canvas: TCanvas; Column: TVirtualTreeColumn; R: TRect; Hover, Pressed: Boolean;
       DropMark: TVTDropMarkMode); virtual;
     procedure DoHeaderDrawQueryElements(var PaintInfo: THeaderPaintInfo; var Elements: THeaderPaintElements); virtual;
@@ -2935,6 +2938,7 @@ type
     property OnHeaderDragged: TVTHeaderDraggedEvent read FOnHeaderDragged write FOnHeaderDragged;
     property OnHeaderDraggedOut: TVTHeaderDraggedOutEvent read FOnHeaderDraggedOut write FOnHeaderDraggedOut;
     property OnHeaderDragging: TVTHeaderDraggingEvent read FOnHeaderDragging write FOnHeaderDragging;
+    property OnHeaderDragOver: TVTHeaderDragOverEvent read FOnHeaderDragOver write FOnHeaderDragOver;
     property OnHeaderDraw: TVTHeaderPaintEvent read FOnHeaderDraw write FOnHeaderDraw;
     property OnHeaderDrawQueryElements: TVTHeaderPaintQueryElementsEvent read FOnHeaderDrawQueryElements
       write FOnHeaderDrawQueryElements;
@@ -3683,6 +3687,7 @@ type
     property OnHeaderDragged;
     property OnHeaderDraggedOut;
     property OnHeaderDragging;
+    property OnHeaderDragOver;
     property OnHeaderDraw;
     property OnHeaderDrawQueryElements;
     property OnHeaderHeightDblClickResize;
@@ -3943,6 +3948,7 @@ type
     property OnHeaderDragged;
     property OnHeaderDraggedOut;
     property OnHeaderDragging;
+    property OnHeaderDragOver;
     property OnHeaderDraw;
     property OnHeaderDrawQueryElements;
     property OnHeaderHeightTracking;
@@ -10289,7 +10295,7 @@ var
   P: TPoint;
   R: TRect;
   I: TColumnIndex;
-  OldPosition: Integer;
+  OldPosition, NewPosition: Integer;
   HitIndex: TColumnIndex;
   NewCursor: HCURSOR;
   Button: TMouseButton;
@@ -10550,18 +10556,23 @@ begin
                 if FColumns.FDropBefore then
                 begin
                   if FColumns[FDragIndex].Position < FColumns[FDropTarget].Position then
-                    FColumns[FDragIndex].Position := Max(0, FColumns[FDropTarget].Position - 1)
+                    NewPosition := Max(0, FColumns[FDropTarget].Position - 1)
                   else
-                    FColumns[FDragIndex].Position := FColumns[FDropTarget].Position;
+                    NewPosition := FColumns[FDropTarget].Position;
                 end
                 else
                 begin
                   if FColumns[FDragIndex].Position < FColumns[FDropTarget].Position then
-                    FColumns[FDragIndex].Position := FColumns[FDropTarget].Position
+                    NewPosition := FColumns[FDropTarget].Position
                   else
-                    FColumns[FDragIndex].Position := FColumns[FDropTarget].Position + 1;
+                    NewPosition := FColumns[FDropTarget].Position + 1;
                 end;
-                Treeview.DoHeaderDragged(FDragIndex, OldPosition);
+
+                if Treeview.DoHeaderDragOver(FDragIndex, NewPosition) then
+                begin
+                  FColumns[FDragIndex].Position := NewPosition;
+                  Treeview.DoHeaderDragged(FDragIndex, OldPosition);
+                end;
               end
               else
                 Treeview.DoHeaderDraggedOut(FDragIndex, P);
@@ -20166,6 +20177,14 @@ procedure TBaseVirtualTree.DoHeaderMouseUp(Button: TMouseButton; Shift: TShiftSt
 begin
   if Assigned(FOnHeaderMouseUp) then
     FOnHeaderMouseUp(FHeader, Button, Shift, X, Y);
+end;
+
+function TBaseVirtualTree.DoHeaderDragOver(Column: TColumnIndex; NewPosition: TColumnPosition): Boolean;
+
+begin
+  Result := True;
+  if Assigned(FOnHeaderDragOver) then
+    FOnHeaderDragOver(FHeader, Column, NewPosition, Result);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------

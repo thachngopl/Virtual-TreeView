@@ -12,7 +12,7 @@ interface
 
 uses
   Windows, Classes, DesignIntf, DesignEditors, VCLEditors, PropertyCategories,
-  ColnEdit, VirtualTrees, VirtualTrees.HeaderPopup;
+  ColnEdit, VirtualTrees, VirtualTrees.HeaderPopup, VirtualGHFStringTree;
 
 type
   TVirtualTreeEditor = class (TDefaultEditor)
@@ -292,7 +292,7 @@ end;
 procedure Register;
 
 begin
-  RegisterComponents('Virtual Controls', [TVirtualStringTree, TVirtualDrawTree, TVTHeaderPopupMenu]);
+  RegisterComponents('Virtual Controls', [TVirtualStringTree, TVirtualDrawTree, TVTHeaderPopupMenu, TVirtualGHFStringTree]);
   RegisterComponentEditor(TVirtualStringTree, TVirtualTreeEditor);
   RegisterComponentEditor(TVirtualDrawTree, TVirtualTreeEditor);
   RegisterPropertyEditor(TypeInfo(TClipboardFormats), nil, '', TClipboardFormatsProperty);
